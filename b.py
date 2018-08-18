@@ -1,20 +1,28 @@
-import matplotlib.pyplot as plt
+import random
+import pylab
+from matplotlib.pyplot import pause
 import networkx as nx
+pylab.ion()
 
-g = nx.Graph()
+graph = nx.Graph()
+node_number = 0
+graph.add_node(node_number, Position=(random.randrange(0, 100), random.randrange(0, 100)))
 
-g.add_node(1)
-g.add_node(2)
-g.add_node(3)
-g.add_node(4)
-g.add_node(5)
-g.add_node(6)
-g.add_node(7)
+def get_fig():
+    global node_number
+    node_number += 1
+    graph.add_node(node_number, Position=(random.randrange(0, 100), random.randrange(0, 100)))
+    graph.add_edge(node_number, random.choice(graph.nodes()))
+    fig = pylab.figure()
+    nx.draw(graph, pos=nx.get_node_attributes(graph,'Position'))
+    return fig
 
-g.add_edge(1,2)
-g.add_edge(1,3)
-g.add_edge(2,3)
+num_plots = 50;
+pylab.show()
 
-nx.draw(g)
-
-plt.show()
+for i in range(num_plots):
+    fig = get_fig()
+    fig.canvas.draw()
+    pylab.draw()
+    pause(2)
+    pylab.close(fig)
