@@ -94,5 +94,7 @@ transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[
 valid_transitions = lambda q: [ n for n in transition(q) if valid(Q[n[1]]) ]
 
 if __name__ == '__main__':
+	print(Qx([0,0,0,0,0,1]))
+	print("x")
 	main()	
 	
