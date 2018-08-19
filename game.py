@@ -1,9 +1,12 @@
 import pygame
+import time
+from random import randint
 
 Q = []
 
 entities = ["Scientist", "Girl", "Boy", "Lion", "Cow", "Bag"]
 prohibited = [(1,3),(2,3),(1,4),(2,4),(3,4),(4,5)]
+error_dict = {}
 
 def permute(s,n):
     seq = range(s)
@@ -24,15 +27,14 @@ Qx = lambda q: Q.index(q)
 E = [ (i, 0, j, k) for i in [1,0] for j in range(6) for k in range(6) ]
 T = lambda q, i: [ i[0] if i[1] == j or i[2] == j or i[3] == j else q[j] for j in range(len(q))]
 valid = lambda q: not (sum([q[p[0]]==q[p[1]] and q[0]!=q[p[0]] for p in prohibited]) > 0)
-transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[e[2]] ]
+transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[e[2]] and e[0]!=q[e[3]]]
 valid_transitions = lambda q: [ n for n in transition(q) if valid(Q[n[1]]) ]
 
 Q = permute(2,6)
 F = Q[-1]
 
-
 curr_state = Q[0]
-planet = 0
+curr_planet = 0
 
 pygame.init()
 
@@ -44,10 +46,11 @@ height = 900
 # Colors
 black = (0,0,0)
 white = (255, 255, 255)
-red = (200, 0, 0)
+red = (180, 0, 0)
 green = (0, 200, 0)
 light_red = (255, 0, 0)
 light_green = (0, 255, 0)
+aqua = (0, 255, 255)
 
 # Initialization
 gameDisplay = pygame.display.set_mode((width, height))
@@ -55,13 +58,12 @@ pygame.display.set_caption('Crossing Planets')
 clock = pygame.time.Clock()
 
 # Sprites
-bg = pygame.image.load('bg1.png')
-graph = pygame.transform.scale(pygame.image.load('Figure_1.png'), (1045, 900))
+bg = pygame.image.load('res/bg1.png')
 graph = pygame.transform.scale(pygame.image.load('Figure_1.png'), (1045, 900))
 
 class Object:
 
-	def __init__(self, img, x, y, w, h):
+	def __init__(self,  img, x, y, w, h):
 		self.img, self.x, self.y, self.w,self.h  = img, x, y, w, h
 		
 	def render(self):
@@ -71,27 +73,27 @@ class Object:
 		if (self.x + self.w) > mouse[0] > self.x and (self.y + self.h) > mouse[1] > self.y:
 			
 			if click[0] == 1:
-				print(len(sr.get_passenger_list()) )
+				#print(len(sr.get_passenger_list()) )
 				if len(sr.get_passenger_list()) < 3:
 					if isinstance(self, Scientist):
-						sr.add_passenger(s)
+						sr.add_passenger(self)
 						print(sr.passenger_list)
-						self.x = 2000
+						self.y = 2000
 					elif isinstance(self, Girl):
-						sr.add_passenger(g)
-						self.x = 2000
+						sr.add_passenger(self)
+						self.y = 2000
 					elif isinstance(self, Boy):
-						sr.add_passenger(b)
-						self.x = 2000
+						sr.add_passenger(self)
+						self.y = 2000
 					elif isinstance(self, Lion):
-						sr.add_passenger(l)
-						self.x = 2000
+						sr.add_passenger(self)
+						self.y = 2000
 					elif isinstance(self, Cow):
-						sr.add_passenger(c)
-						self.x = 2000
+						sr.add_passenger(self)
+						self.y = 2000
 					elif isinstance(self, Bag):
-						sr.add_passenger(bag)
-						self.x = 2000
+						sr.add_passenger(self)
+						self.y = 2000
 				else:
 					print("Rocket Full!")
 					
@@ -134,15 +136,77 @@ class Rocket(Object):
 		self.passenger_list = []
 		self.move = False
 
-	def update(self, v):
+	def update(self):
+		global curr_planet 
+		global curr_state
+		global gege
 		if self.can_move():
-			self.set_y(self.get_y() + v)
-
+			if curr_planet == 0:
+				self.set_y(self.get_y() - 10)
+				
+				if self.y == -240:
+					self.y = 1140
+			elif curr_planet == 1:
+				self.set_y(self.get_y() - 10)
+			
+			if self.get_y() == 650:
+				curr_planet = 1
+				self.set_move(False)
+				self.unload_passengers()
+				if not valid(curr_state):
+					gege = True
+					gg()
+			elif self.get_y() == 0:
+				curr_planet = 0
+				self.set_move(False)
+				self.unload_passengers()
+				if not valid(curr_state):
+					gege = True
+					gg()
+				
 	def add_passenger(self, p):
 		self.passenger_list.append(p)
 
 	def remove_passenger(self, p):
 		self.passenger_list.remove(p)
+	
+	def unload_passengers(self):
+		global curr_planet
+		
+		if curr_planet == 0:
+			for p in self.passenger_list:
+				if isinstance(p, Scientist):
+					p.set_y(60)
+				elif isinstance(p, Girl):
+					p.set_y(110)
+				elif isinstance(p, Boy):
+					p.set_y(100)
+				elif isinstance(p, Lion):
+					p.set_y(160)
+				elif isinstance(p, Cow):
+					p.set_y(140)
+				elif isinstance(p, Bag):
+					p.set_y(130)
+					
+			self.passenger_list.clear()
+		elif curr_planet == 1:
+			print(len(self.passenger_list))
+			for p in self.passenger_list:
+				print(self.passenger_list)
+				if isinstance(p, Scientist):
+					p.set_y(710)
+				elif isinstance(p, Girl):
+					p.set_y(750)
+				elif isinstance(p, Boy):
+					p.set_y(740)
+				elif isinstance(p, Lion):
+					p.set_y(790)
+				elif isinstance(p, Cow):
+					p.set_y(780)
+				elif isinstance(p, Bag):
+					p.set_y(770)
+
+			self.passenger_list.clear()
 
 	def get_passenger_list(self):
 		return self.passenger_list
@@ -176,7 +240,7 @@ class Girl(Object):
 		
 class Lion(Object):
 	def __init__(self):
-		super().__init__(pygame.image.load('res/lion1.png'), 300 , 160, 138, 97)
+		super().__init__(pygame.image.load('res/lion1.png'), 300, 160, 138, 97)
 		
 	def update(self, y):
 		self.set_y(y)
@@ -202,60 +266,78 @@ b = Boy()
 l = Lion()
 c = Cow()
 bag = Bag()
+game_over = False
+gege = False
 
 def render_figure():
-	gameDisplay.blit(graph,(875, 0))
+	try:
+		gameDisplay.blit(pygame.transform.scale(pygame.image.load('fig/{0}.png'.format(Qx(curr_state))), (1045, 900)),(875, 0))
+	except:
+		print("Figure not found!")
 	
 def render_bg():
 	gameDisplay.blit(bg,(0, 0))
 	
 def launch_rocket():
 	global curr_state
-	global planet
+	global curr_planet
 	input = ()
 	
-	if planet == 0:
+	if curr_planet == 0:
 		input += (1,)
-		planet = 1
 	else:
 		input += (0,)
-		planet = 0
 		
+	# Update back end current state.	
 	if s not in sr.get_passenger_list():
 		print("Error scientist not in rocket")
 	else:
 		for p in sr.get_passenger_list():
-			if p == Scientist:
+			if isinstance(p, Scientist):
 				input += (0,)
-			elif p == Girl:
+			elif isinstance(p, Girl):
 				input += (1,)
-			elif p == Boy:
+			elif isinstance(p, Boy):
 				input += (2,)
-			elif p == Lion:
+			elif isinstance(p, Lion):
 				input += (3,)
-			elif p == Cow:
+			elif isinstance(p, Cow):
 				input += (4,)
-			elif p == Bag:
+			elif isinstance(p, Bag):
 				input += (5,)
 		
 		while len(input) < 4:
 			input +=(0,)
 		
+		print(input)
 		
 		curr_state = T(curr_state, input)
-		print(input)
-		print(T(curr_state, input))
+		
 		print(curr_state)
 		sr.set_move(True)
+		
+def clear_passengers():
+	sr.unload_passengers()
+
+def hint():
+	global curr_state
+	print(curr_state)
+	temp = valid_transitions(curr_state)
+	r = randint(0, len(temp) - 1)
+	
+	h = "Board the Scientist, the {0}, and the {1}".format(entities[temp[r][0][2]], entities[temp[r][0][3]])
+	
+	message_display(h, 400, 375, 35, aqua)
+	time.sleep(2)	
 	
 def text_objects(text, font, color):
 	text_surface = font.render(text, True, color)
 	return text_surface, text_surface.get_rect()
 	
-def message_display(s):
-	large_text = pygame.font.Font("freesansbold.ttf", 115)
-	TextSurface, TextRect = text_objects(s, large_text, white)
-	TextRect.center = ((width/2),(height/2))
+def message_display(m, x, y, s, r):
+	large_text = pygame.font.Font("freesansbold.ttf", s)
+	TextSurface, TextRect = text_objects(m, large_text, r)
+	TextRect.center = (x,y)
 	gameDisplay.blit(TextSurface, TextRect)
 	
 	pygame.display.update()
@@ -263,7 +345,21 @@ def message_display(s):
 	#time.sleep(2)
 
 def gg():
-	message_display("Game Over!")
+	global gege
+	
+	while gege:
+		message_display("Game Over!", 400, 375, 115, aqua)
+		#print("err msg")
+		for e in pygame.event.get():
+			if e.type == pygame.QUIT:
+				pygame.quit()
+				quit()
+		
+		button("Play Again", 150, 750, 130, 50, green, light_green, game_loop)
+		button("Quit", 550, 750, 130, 50, red, light_red, quit_game)
+		
+		pygame.display.update()
+		clock.tick(60)
 	
 def button(msg, x, y, w, h, i, a, action=None):
 	mouse = pygame.mouse.get_pos()
@@ -282,14 +378,16 @@ def button(msg, x, y, w, h, i, a, action=None):
 	TextSurface, TextRect = text_objects(msg, small_text, white)
 	TextRect.center = ((x+(w/2)),(y+(h/2)))
 	gameDisplay.blit(TextSurface, TextRect)
-	
-def obj_button():
-	mouse = pygame.mouse.get_pos()
-	click = pygame.mouse.get_pressed()
+
+def quit_game():
+	global game_over
+	global gege
+	gege = False
+	game_over = True
 	
 def game_intro():
 	intro = True
-
+	
 	while intro:
 		for e in pygame.event.get():
 			if e.type == pygame.QUIT:
@@ -311,7 +409,11 @@ def game_intro():
 		clock.tick(60)
 		
 def game_loop():
-	game_over = False
+	global game_over
+	global curr_state
+	global curr_planet
+	curr_state = Q[0]
+	curr_planet = 0
 	
 	while not game_over:
 		for e in pygame.event.get():
@@ -324,7 +426,12 @@ def game_loop():
 		render_figure()
 		render_bg()
 		
-		button("LAUNCH", 900, 800, 100, 50, red, light_red, launch_rocket)
+		button("LAUNCH", 900, 750, 100, 50, red, light_red, launch_rocket)
+		button("CLEAR", 900 , 820, 100, 50, red, light_red, clear_passengers)
+		button("HINT", 1020, 750, 100, 50, red, light_red, hint)
+		button("SOLUTIONS", 1140, 750, 140, 50, red, light_red)
+		button("RESET", 1020, 820, 100, 50, red, light_red)
+		button("QUIT", 1140, 820, 100, 50, red, light_red, quit_game)
 		
 		sr.render()
 		s.render()
@@ -334,12 +441,8 @@ def game_loop():
 		c.render()
 		bag.render()
 		
-		if sr.can_move():
-			sr.update(10)
-			if sr.get_y() == 650 or sr.get_y() == 0:
-				sr.set_move(False)
-
-		#gg()
+		sr.update()
+		
 		# Refresh
 
 		pygame.display.update()

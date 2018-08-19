@@ -4,7 +4,7 @@ import networkx as nx
 Q = []
 G = nx.Graph()
 
-entities = ["Scientist", "Human1", "Human2", "Lion", "Cow", "Grains"]
+entities = ["Scientist", "Boy", "Girl", "Lion", "Cow", "Grains"]
 prohibited = [(1,3),(2,3),(1,4),(2,4),(3,4),(4,5)]
 
 
@@ -90,7 +90,7 @@ Qx = lambda q: Q.index(q)
 E = [ (i, 0, j, k) for i in [1,0] for j in range(6) for k in range(6) ]
 T = lambda q, i: [ i[0] if i[1] == j or i[2] == j or i[3] == j else q[j] for j in range(len(q))]
 valid = lambda q: not (sum([q[p[0]]==q[p[1]] and q[0]!=q[p[0]] for p in prohibited]) > 0)
-transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[e[2]] ]
+transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[e[2]] and e[0]!=q[e[3]]]
 valid_transitions = lambda q: [ n for n in transition(q) if valid(Q[n[1]]) ]
 
 if __name__ == '__main__':
