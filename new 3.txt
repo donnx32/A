@@ -1,0 +1,41 @@
+Heroku
+Email: lulgag322@gmail.com
+Pass: Lulgag.322
+
+mlabs
+Username: lulgag322
+Pass: LuLgag.322
+
+Amazon s3
+lulgag322
+LuLgag.322
+heroku login
+
+// Enter heroku credentials
+// heroku create
+heroku git:remote -a lulgag
+
+git init
+git pull origin master 
+git add . 
+git commit -am "make it better"
+git push heroku master
+
+heroku run bash
+
+if app crashed
+- git push heroku master # if not done
+- heroku run rake db:migrate
+- heroku restart
+
+Dependencies:
+fs
+path
+express
+express-session
+body-parser
+hbs
+cookie-parser
+mongoose
+connect-busboy
+crypto

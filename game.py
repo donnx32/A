@@ -205,46 +205,46 @@ class Bag(Object):
 	def update(self, y):
 		self.set_y(y)
 
-def permute(s,n):
-    seq = range(s)
-    permutations = []
-    nodes = list(seq)
-    while len(permutations) < s**n:
-        node = nodes.pop(0)
-        children = list(seq)
-        permutation = permutations.pop(0) if len(permutations)>1 else []
-        for i in range(len(children)):
-            perm = list(permutation)
-            perm.append(children[i])
-            permutations.append(perm)
-            nodes.append(children[i])
-    return permutations
+def p(s,n):
+    ss = range(s)
+    pp = []
+    n = list(ss)
+    while len(pp) < 64:
+        node = n.pop(0)	
+        cc = list(ss)
+        p = pp.pop(0) if len(pp)>1 else []
+        for i in range(len(cc)):
+            p1 = list(p)
+            p1.append(cc[i])
+            pp.append(p1)
+            n.append(cc[i])
+    return pp
 
 def find():
-    not_visited = range(len(Q))
-    paths = []
-    nodes = [0]
+    nlist = range(len(Q))
+    p = []
+    n = [0]
     r = []
     
-    while not_visited:
-        node = nodes.pop(0)
-        children = valid_transitions(Q[node])
-        path = paths.pop(0) if len(paths)>0 else []
+    while nlist:
+        nn = n.pop(0)
+        cc = valid_transitions(Q[nn])
+        pp = p.pop(0) if len(p) > 0 else []
         
-        for i in range(len(children)):
-            child = children[i][1]
-            r.append(child)
+        for i in range(len(cc)):
+            c = cc[i][1]
+            r.append(c)
             
-            if child in not_visited:
-                not_visited = [i for i in range(len(Q)) if i not in r]
-                newpath = list(path)
-                e = children[i][0]
-                newpath.append(e)
-                paths.append(newpath)
-                nodes.append(child)
-                if (child == Qx(F)):
-                    return newpath
-    return paths
+            if c in nlist:
+                nlist = [i for i in range(len(Q)) if i not in r]
+                np = list(pp)
+                e = cc[i][0]
+                np.append(e)
+                p.append(np)
+                n.append(c)
+                if (c == Qx(F)):
+                    return np
+    return p
 
 def find_all():
 	pass
@@ -252,16 +252,37 @@ def find_all():
 def Qx(q):
     return Q.index(q)
 
-E = [ (i, 0, j, k) for i in [1,0] for j in range(6) for k in range(6) ]
+def inputs():
+    l = []
+    for i in [1,0]:
+        for j in range(6):
+            for k in range(6):
+                l.append((i, 0, j, k))
+    return l
 
-T = lambda q, i: [ i[0] if i[1] == j or i[2] == j or i[3] == j else q[j] for j in range(len(q))]
-
+def transition(q, i):
+    l = []
+    for j in range(len(q)):
+        if i[1] == j or i[2] == j or i[3] == j:
+            l.append(i[0])
+        else:
+            l.append(q[j])
+    return l
 valid = lambda q: not (sum([q[p[0]]==q[p[1]] and q[0]!=q[p[0]] for p in prohibited]) > 0)
-
-transition = lambda q: [ (e, Qx( T(q,e) )) for e in E if e[0]!=q[0] and e[0]!=q[e[2]] and e[0]!=q[e[3]]]
+def possible_transitions(q):
+    l = []
+    for e in E:
+        if e[0]!=q[0] and e[0]!=q[e[2]] and e[0]!=q[e[3]]:
+            l.append((e, Qx( transition(q,e))))
+    return l
 
 valid_transitions = lambda q: [ n for n in transition(q) if valid(Q[n[1]]) ]
-
+def valid_transitions(q):
+    l = []
+    for n in possible_transitions(q):
+        if valid(Q[n[1]]):
+            l.append(n)
+    return l
 def render_figure():
 	try:
 		gameDisplay.blit(pygame.transform.scale(pygame.image.load('fig/{0}.png'.format(Qx(curr_state))), (1045, 900)),(875, 0))
@@ -307,7 +328,7 @@ def launch_rocket():
 		
 		print("Input = {0}".format(input))
 		
-		curr_state = T(curr_state, input)
+		curr_state = transition(curr_state, input)
 		
 		print("Current State: {0} = {1}".format(Qx(curr_state), curr_state))
 		sr.set_move(True)
@@ -326,12 +347,12 @@ def hint():
 	message_display(h, 400, 375, 35, aqua)
 	time.sleep(2)
 
-def solutions():
+def ss():
 	global sol
+	global s1
+	global s2
+	global s3
 	sol = True
-	s1 = [(1, 0, 3, 4), (0, 0, 0, 3), (1, 0, 1, 2), (0, 0, 0, 4), (1, 0, 4, 5), (0, 0, 0, 4), (1, 0, 3, 4)]
-	s2 = [(1, 0, 3, 4), (0, 0, 0, 3), (1, 0, 3, 5), (0, 0, 0, 4), (1, 0, 1, 2), (0, 0, 0, 3), (1, 0, 3, 4)]
-	s3 = [(1, 0, 3, 4), (0, 0, 0, 4), (1, 0, 4, 5), (0, 0, 0, 4), (1, 0, 1, 2), (0, 0, 0, 3), (1, 0, 3, 4)]
 	
 	solution = find()
 	
@@ -480,7 +501,7 @@ def buttons():
 	button("LAUNCH", 900, 750, 100, 50, red, light_red, launch_rocket)
 	button("CLEAR", 900 , 820, 100, 50, red, light_red, clear_passengers)
 	button("HINT", 1020, 750, 100, 50, red, light_red, hint)
-	button("SOLUTIONS", 1140, 750, 140, 50, red, light_red, solutions)
+	button("SOLUTIONS", 1140, 750, 140, 50, red, light_red, ss)
 	button("QUIT", 1020, 820, 100, 50, red, light_red, quit_game)
 
 def render_all():
@@ -528,8 +549,9 @@ def main():
 	
 objects = ["Scientist", "Girl", "Boy", "Lion", "Cow", "Bag"]
 prohibited = [(1,3),(2,3),(1,4),(2,4),(3,4),(4,5)]
-Q = permute(2,6)
+Q = p(2,6)
 F = Q[-1]
+E = inputs()
 
 curr_state = Q[0]
 curr_planet = 0
@@ -559,10 +581,13 @@ violet = (138,43,226)
 gameDisplay = pygame.display.set_mode((width, height))
 pygame.display.set_caption('Crossing Planets')
 clock = pygame.time.Clock()
+s1 = [(1, 0, 3, 4), (0, 0, 0, 3), (1, 0, 1, 2), (0, 0, 0, 4), (1, 0, 4, 5), (0, 0, 0, 4), (1, 0, 3, 4)]
+s2 = [(1, 0, 3, 4), (0, 0, 0, 3), (1, 0, 3, 5), (0, 0, 0, 4), (1, 0, 1, 2), (0, 0, 0, 3), (1, 0, 3, 4)]
+s3 = [(1, 0, 3, 4), (0, 0, 0, 4), (1, 0, 4, 5), (0, 0, 0, 4), (1, 0, 1, 2), (0, 0, 0, 3), (1, 0, 3, 4)]
 
 # Sprites
 bg = pygame.image.load('res/bg1.png')
-graph = pygame.transform.scale(pygame.image.load('fig/Figure_1.png'), (1045, 900))
+graph = pygame.transform.scale(pygame.image.load('fig/graph.png'), (1045, 900))
 
 sr = Rocket()		
 s = Scientist()
